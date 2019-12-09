@@ -1,0 +1,15 @@
+{
+  "name": "song-money-total",
+  "version": "1.0.0",
+  "description": "totals the money each song makes in a csv file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "csv-parser": "^2.2.0"
+  }
+}
