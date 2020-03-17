@@ -1,2 +1,4 @@
-To run:
-node index.js landr_report_file_name.csv
+## Run the app
+```
+node index.js {path/to/report.csv}
+```

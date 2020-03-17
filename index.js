@@ -13,7 +13,7 @@ const TRACK_NAME_IDENTIFER = "Track";
 const STORE_IDENTIFIER = "Store";
 const STORE_SERVICE_IDENTIFIER = "Store service";
 const COUNTRY_IDENTIFIER = "Country of sale or stream";
-const EARNINGS_IDENTIFIER = "Earnings generated (USD)";
+const EARNINGS_IDENTIFIER = "Net earnings (USD)";
 const NUM_STREAMS_IDENTIFIER = "Quantity of sales or streams";
 const printNewLine = _ => console.log("\n");
 const printGreen = chalk.bold.greenBright;
