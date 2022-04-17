@@ -7,9 +7,9 @@ var mySongObj = {},
   myStreamingStoreObj = {},
   myCountryObj = {},
   myStreamQuantObj = {};
-var myTotalMoneyCount = 0.0;
+var payTotal = 0.0;
 
-const TRACK_NAME_IDENTIFER = "Track";
+const TRACK_NAME_IDENTIFIER = "Track";
 const STORE_IDENTIFIER = "Store";
 const STORE_SERVICE_IDENTIFIER = "Store service";
 const COUNTRY_IDENTIFIER = "Country of sale or stream";
@@ -26,7 +26,7 @@ const printYellow = chalk.yellow;
 fs.createReadStream(fileName)
   .pipe(csv())
   .on("data", row => {
-    let trackName = row[TRACK_NAME_IDENTIFER];
+    let trackName = row[TRACK_NAME_IDENTIFIER];
     // if Store and Store service are the same, just use Store instead of `Store-Store service`
     let moneySource =
       row[STORE_IDENTIFIER] === row[STORE_SERVICE_IDENTIFIER]
@@ -61,7 +61,7 @@ fs.createReadStream(fileName)
           printGreen(moneyEarned.toFixed(2)) +
           printMagenta(" - (" + numStreams + " sales/streams)")
       );
-      myTotalMoneyCount += moneyEarned;
+      payTotal += moneyEarned;
     });
 
     printNewLine();
@@ -83,8 +83,8 @@ fs.createReadStream(fileName)
     printNewLine();
 
     console.log(
-      printYellow("\nTotal money count: ") +
-        printCyan("$" + myTotalMoneyCount.toFixed(2)) +
+      printYellow("\nTotal: ") +
+        printCyan("$" + payTotal.toFixed(2)) +
         "\n"
     );
   });

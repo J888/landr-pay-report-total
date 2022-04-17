@@ -1,5 +1,5 @@
 {
-  "name": "song-money-total",
+  "name": "landr-pay-report-total",
   "version": "1.0.0",
   "description": "totals the money each song makes in a csv file",
   "main": "index.js",
