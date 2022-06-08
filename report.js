@@ -2,11 +2,6 @@ const chalk = require("chalk");
 const { csvRowsPromise } = require("./lib/fileRead");
 
 var filePath = process.argv.slice(2)[0];
-var mySongObj = {},
-  myStreamingStoreObj = {},
-  myCountryObj = {},
-  myStreamQuantObj = {};
-var payTotal = 0.0;
 
 const TRACK_NAME_IDENTIFIER = "Track";
 const STORE_IDENTIFIER = "Store";
@@ -22,6 +17,13 @@ const printBlue = chalk.blue;
 const printYellow = chalk.yellow;
 
 (async () => {
+  let data = {
+    byStore: {},
+    byCountry: {},
+    byTrackName: {},
+    earningsTotal: 0.0
+  }
+
   console.log(`Reading [${filePath}]`)
   let csvRows = await csvRowsPromise(filePath);
 
@@ -37,40 +39,32 @@ const printYellow = chalk.yellow;
     let songEarning = parseFloat(row[EARNINGS_IDENTIFIER]);
 
     // initialize if not set yet
-    if (!mySongObj[trackName]) {
-      mySongObj[trackName] = 0;
-      myStreamQuantObj[trackName] = 0;
+    if (!data.byTrackName[trackName]) {
+      data.byTrackName[trackName] = { earnings: 0.0, streams: 0 };
+    }
+    if (!data.byStore[moneySource]) {
+      data.byStore[moneySource] = { earnings: 0.0, streams: 0 }
+    }
+    if (!data.byCountry[country]) {
+      data.byCountry[country] = { earnings: 0.0, streams: 0 }
     }
 
-    mySongObj[trackName] += songEarning;
-    myStreamQuantObj[trackName] += quantityOfStreams;
+    data.byTrackName[trackName].earnings += songEarning;
+    data.byTrackName[trackName].streams += quantityOfStreams;
 
-    // initialize if not set yet
-    if (!myStreamingStoreObj[moneySource]) {
-      myStreamingStoreObj[moneySource] = {
-        earnings: 0.0,
-        streamCount: 0,
-      }
-    }
+    data.byStore[moneySource].earnings += songEarning;
+    data.byStore[moneySource].streams += quantityOfStreams;
 
-    myStreamingStoreObj[moneySource]['earnings'] += songEarning;
-    myStreamingStoreObj[moneySource]['streamCount'] += quantityOfStreams;
-
-    myCountryObj[country] = myCountryObj[country] + songEarning || songEarning;
+    data.byCountry[country].earnings += songEarning;
+    data.byCountry[country].streams += quantityOfStreams;
   }
 
   console.log(`Done processing ${csvRows.length} rows. Results are: `);
 
-  sortedBy(mySongObj, null).forEach(key => {
-    let moneyEarned = mySongObj[key];
-    let numStreams = myStreamQuantObj[key];
-    console.log(
-      printMagenta(key) +
-        ": $" +
-        printGreen(moneyEarned.toFixed(2)) +
-        printMagenta(" - (" + numStreams + " sales/streams)")
-    );
-    payTotal += moneyEarned;
+  sortedBy(data.byTrackName, 'earnings').forEach(track => {
+    let { earnings, streams } = data.byTrackName[track];
+    console.log(`${printMagenta(track)}: $${printGreen(earnings.toFixed(2))} - ${printMagenta(" - (" + streams + " sales/streams)")}`);
+    data.earningsTotal += earnings;
   });
 
   console.log(printYellow(`\n\nStreams by Service/Platform:`))
@@ -78,21 +72,19 @@ const printYellow = chalk.yellow;
   /**
    * Print the list of all [Store]: $[earnings] (streamCount) streams
    */
-  sortedBy(myStreamingStoreObj, 'earnings').forEach(storeName => {
-    let { earnings, streamCount } = myStreamingStoreObj[storeName];
-    console.log(printWhite(storeName) + ": $" + printGreen(earnings.toFixed(2)) + ' ' + printWhite(`(${streamCount}) streams`));
+  sortedBy(data.byStore, 'earnings').forEach(storeName => {
+    let { earnings, streams } = data.byStore[storeName];
+    console.log(printWhite(storeName) + ": $" + printGreen(earnings.toFixed(2)) + ' ' + printWhite(`(${streams}) streams`));
   });
 
   console.log("\n")
 
-  sortedBy(myCountryObj, null).forEach(key => {
-    let value = myCountryObj[key];
-    process.stdout.write(
-      printBlue(key) + ": $" + printGreen(value.toFixed(2)) + ", "
-    );
+  sortedBy(data.byCountry, 'earnings').forEach(country => {
+    let {earnings,streams} = data.byCountry[country];
+    process.stdout.write(`${printBlue(country)}: $${printGreen(earnings.toFixed(2))} (${printWhite(streams)}) streams, `)
   });
 
-  console.log(`\n\n${printYellow('\nTotal:')} ${printCyan("$" + payTotal.toFixed(2))}\n`);
+  console.log(`\n\n${printYellow('\nTotal:')} ${printCyan("$" + data.earningsTotal.toFixed(2))}\n`);
 })()
 
 function sortedBy(obj, sortByKey) {
@@ -100,14 +92,7 @@ function sortedBy(obj, sortByKey) {
   let keys = Object.keys(obj);
 
   // Then sort by using the keys to lookup the values in the original object:
-
-  if (sortByKey) {
-    return keys.sort(function(a, b) {
-      return obj[b][sortByKey] - obj[a][sortByKey];
-    });
-  } else {
-    return keys.sort(function(a, b) {
-      return obj[b] - obj[a];
-    });
-  }
+  return keys.sort(function(a, b) {
+    return obj[b][sortByKey] - obj[a][sortByKey];
+  });
 }
