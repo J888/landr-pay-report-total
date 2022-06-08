@@ -36,16 +36,25 @@ fs.createReadStream(fileName)
     let quantityOfStreams = parseInt(row[NUM_STREAMS_IDENTIFIER]);
     let songEarning = parseFloat(row[EARNINGS_IDENTIFIER]);
 
+    // initialize if not set yet
     if (!mySongObj[trackName]) {
-      mySongObj[trackName] = songEarning;
-      myStreamQuantObj[trackName] = quantityOfStreams;
-    } else {
-      mySongObj[trackName] += songEarning;
-      myStreamQuantObj[trackName] += quantityOfStreams;
+      mySongObj[trackName] = 0;
+      myStreamQuantObj[trackName] = 0;
     }
 
-    myStreamingStoreObj[moneySource] =
-      myStreamingStoreObj[moneySource] + songEarning || songEarning;
+    mySongObj[trackName] += songEarning;
+    myStreamQuantObj[trackName] += quantityOfStreams;
+
+    // initialize if not set yet
+    if (!myStreamingStoreObj[moneySource]) {
+      myStreamingStoreObj[moneySource] = {
+        earnings: 0.0,
+        streamCount: 0,
+      }
+    }
+
+    myStreamingStoreObj[moneySource]['earnings'] += songEarning;
+    myStreamingStoreObj[moneySource]['streamCount'] += quantityOfStreams;
 
     myCountryObj[country] = myCountryObj[country] + songEarning || songEarning;
   })
@@ -66,9 +75,14 @@ fs.createReadStream(fileName)
 
     printNewLine();
 
-    keysSorted(myStreamingStoreObj).forEach(key => {
-      let value = myStreamingStoreObj[key];
-      console.log(printWhite(key) + ": $" + printGreen(value.toFixed(2)));
+    console.log(printYellow(`Streams by Service/Platform:`))
+
+    /**
+     * Print the list of all [Store]: $[earnings] (streamCount) streams
+     */
+    sortedBy(myStreamingStoreObj, 'earnings').forEach(storeName => {
+      let { earnings, streamCount } = myStreamingStoreObj[storeName];
+      console.log(printWhite(storeName) + ": $" + printGreen(earnings.toFixed(2)) + ' ' + printWhite(`(${streamCount}) streams`));
     });
 
     printNewLine();
@@ -96,5 +110,15 @@ function keysSorted(obj) {
   // Then sort by using the keys to lookup the values in the original object:
   return keys.sort(function(a, b) {
     return obj[b] - obj[a];
+  });
+}
+
+function sortedBy(obj, sortByKey) {
+  // Get an array of the keys:
+  let keys = Object.keys(obj);
+
+  // Then sort by using the keys to lookup the values in the original object:
+  return keys.sort(function(a, b) {
+    return obj[b][sortByKey] - obj[a][sortByKey];
   });
 }
