@@ -25,6 +25,6 @@ $ git clone https://github.com/J888/landr-pay-report-total/
 $ cd landr-pay-report-total
 $ npm install
 $
-$ # print out report
-$ node report <INPUT_CSV_PATH>
+$ # print out report. Multiple CSV file paths can be given.
+$ node report <INPUT_CSV_PATH_ONE> <INPUT_CSV_PATH_TWO>
 ```
